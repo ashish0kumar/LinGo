@@ -1,6 +1,6 @@
 # 📖 LinGo
 
-A CLI for Urban Dictionary, built using the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework in Go. It fetches definitions and examples of slang terms from the Urban Dictionary API and displays them in a styled terminal output.
+A CLI for [Urban Dictionary](https://www.urbandictionary.com/), built using the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework in Go. It fetches definitions and examples of slang terms from the Urban Dictionary API and displays them in a styled terminal output.
 
 ![ss](assets/ss.png)
 
