@@ -2,6 +2,8 @@
 
 A CLI for Urban Dictionary, built using the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework in Go. It fetches definitions and examples of slang terms from the Urban Dictionary API and displays them in a styled terminal output.
 
+![ss](assets/ss.png)
+
 ## ✨ Features
 
 - Search for terms and get their definitions and examples from Urban Dictionary
@@ -53,16 +55,23 @@ LinGo
 
 **Example Output**
 
-```bash
-> bruh
+```
+> Bruh 
 
-bruh
+Bruh
 
-another [way] of [saying] really, or [seriously].
+[The best] [answer] to [literally anything]
 
-[little brother]: I want to be [Snow White] for Halloween!
+Joe: [my mom died] yesterday
 
-[big brother]: bruh.
+John: bruuhh
 
-👍 3628 👎 425
+Joe: Yo my mom just won [million dollars]
+
+John: [bRuHhh]
+
+Joe: my mom made dinner for us
+John: bruh
+
+👍 18515        👎 965
 ```
