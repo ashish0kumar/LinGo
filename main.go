@@ -11,13 +11,15 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/fatih/color"
+	"github.com/muesli/reflow/wordwrap"
 )
 
 func main() {
 	m := NewModel()
 
 	// NewProgram with initial model and program options
-	p := tea.NewProgram(m)
+	p := tea.NewProgram(m, tea.WithAltScreen())
 
 	// Run
 	_, err := p.Run()
@@ -32,6 +34,9 @@ type Model struct {
 	textinput textinput.Model
 	terms     Terms
 	err       error
+	width     int
+	height    int
+	ready     bool
 }
 
 // NewModel: initial model
@@ -41,17 +46,17 @@ func NewModel() Model {
 	ti.Focus()
 
 	return Model{
-		title:     "hello world",
+		title:     "Urban Dictionary CLI",
 		textinput: ti,
 	}
 }
 
 // Init: event loop
 func (m Model) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(textinput.Blink, tea.EnterAltScreen)
 }
 
-// Update: handle mssgs
+// Update: handle messages
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -62,6 +67,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			v := m.textinput.Value()
 			return m, handleQuerySearch(v)
 		}
+
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.ready = true
+		return m, nil
 
 	case TermsResponseMsg:
 		if msg.Err != nil {
@@ -79,15 +90,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View: return a string based on the state of our model
 func (m Model) View() string {
+	if !m.ready {
+		return "Loading..."
+	}
+
 	s := m.textinput.View() + "\n\n"
 
 	if len(m.terms.List) > 0 {
-		s += m.terms.List[0].Definition + "\n\n"
+		definition := wordwrap.String(m.terms.List[0].Definition, int(m.width))
+		definitionStyled := color.New(color.FgBlue, color.Bold).Sprint(definition)
+
+		example := wordwrap.String(m.terms.List[0].Example, int(m.width))
+		exampleStyled := color.New(color.Italic).Sprint(example)
+
+		thumbsUpStyled := color.New(color.FgGreen).Sprintf("👍 %d", m.terms.List[0].ThumbsUp)
+		thumbsDownStyled := color.New(color.FgRed).Sprintf("👎 %d", m.terms.List[0].ThumbsDown)
+
+		wordStyled := color.New(color.FgYellow, color.Bold, color.Underline).Sprintf(m.terms.List[0].Word)
+
+		s += fmt.Sprintf("%s\n\n", wordStyled)
+		s += fmt.Sprintf("%s\n\n", definitionStyled)
+		s += fmt.Sprintf("%s\n\n", exampleStyled)
+		s += fmt.Sprintf("%s\t%s\n\n", thumbsUpStyled, thumbsDownStyled)
 	}
 
 	return s
 }
 
+// Terms struct for parsing API response
 type Terms struct {
 	List []struct {
 		Definition  string    `json:"definition"`
@@ -103,7 +133,7 @@ type Terms struct {
 	} `json:"list"`
 }
 
-// Cmd
+// Cmd for querying Urban Dictionary API
 func handleQuerySearch(q string) tea.Cmd {
 	return func() tea.Msg {
 		url := fmt.Sprintf("https://api.urbandictionary.com/v0/define?term=%s", url2.QueryEscape(q))
@@ -141,10 +171,8 @@ func handleQuerySearch(q string) tea.Cmd {
 	}
 }
 
-// Msg
+// Msg to handle the API response
 type TermsResponseMsg struct {
 	Terms Terms
 	Err   error
 }
-type TermsMsg Terms
-type ErrorMsg error
